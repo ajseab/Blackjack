@@ -32,7 +32,7 @@ class Hand():
 
         # If there's more than 1 Ace and the hand's sum
         # is less than 11, add 10 to the hand's sum
-        if self.number_of_aces > 0 and hand_sum < 11:
+        if self.number_of_aces > 0 and hand_sum < 12:
             hand_sum += 10
 
         # Updates self.hand_sum with calculated integer 
