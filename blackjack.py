@@ -1,23 +1,210 @@
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# Title: Blackjack
-# Author: A. Seabolt
-# Date created: May 18th, 2023
-# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+"""A Blackjack terminal game built for MacOS.
 
-# Import statements
+Usage: python3 blackjack.py
+
+Copyright (c) 2023, Avery Seabolt
+All rights reserved.
+
+This source code is licensed under the BSD-style license found in the
+LICENSE file in the root directory of this source tree. 
+"""
+
 import os
 import getpass
 import platform
-from playing_cards import Deck
-from rules import Rules
-from dealer import Dealer
-from player import Player
+from random import shuffle
 
-# Creates our Blackjack class to tie everything together
+
+class Card():
+    
+    """When we make our actual deck of playing cards,
+       each card in the deck will be an instance of this class.
+    """
+
+    # A dictionary that contains our symbols
+    symbols_dict = {"Spades": "♠", "Hearts": "♥", "Clubs": "♣", "Diamonds": "♦"}
+
+    # Defining our Card constructor method
+    def __init__(self, value, suit):
+        self.value = value
+        self.suit = suit
+        self.assign_symbol()
+        self.assign_int()
+
+    # Assigns an integer to each instance of Card
+    def assign_int(self):
+
+        # If the card is a number card, the assigned integer is the number the card is
+        if self.value.isnumeric():
+            self.assigned_int = int(self.value)
+
+        # If the card is an 'Ace', the assigned integer is 1
+        elif self.value == "A":
+            self.assigned_int = 1
+
+        # If the card is a face card, the assigned integer is 10
+        else:
+            self.assigned_int = 10
+
+    # Assigns a symbol to each instance of Card by referencing the symbols dictionary
+    def assign_symbol(self):
+        self.symbol = self.symbols_dict[self.suit]
+
+    # Returns a string formatting the card for printing
+    def get_printed_card(self):
+        return f"|{self.value} {self.symbol}|"
+        
+# Class for creating a shuffled deck of playing cards
+# Made up of instances of class Cards
+class Deck():
+
+    # Initializing Deck with an empty list that will be filled with cards when new_deck is called
+    def __init__(self):
+        self.cards = []
+
+    # Creates our deck of playing cards which is a list of Card objects
+    # and shuffles the deck
+    def new_deck(self):
+
+        # Tuple with card values
+        values = ("A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K")
+
+        # Tuple with card suits
+        suits = ("Spades", "Hearts", "Clubs", "Diamonds")
+
+        # Creates an ordered list of Card objects
+        cards = [Card(value, suit) for value in values for suit in suits]
+
+        # Shuffles the list
+        shuffle(cards)
+
+        # Assigned the shuffled list of Card objects to self.cards
+        self.cards = cards
+
+    # Deals a card from the top of the deck 
+    # and removes it from the deck
+    def deal_cards(self, number_of_cards, hand):
+        dealt_cards = []
+
+        # If you only want to deal 1 card
+        if number_of_cards == 1:
+            dealt_cards.append(self.cards.pop())
+
+        # If it's more than 1 card
+        else:
+            for _ in range(number_of_cards):
+                card = self.cards.pop()
+                dealt_cards.append(card)
+        
+        # Extend our hand list with the cards that were dealt
+        hand.hand_list.extend(dealt_cards)
+
+        # Update the number of Aces that are in the player or dealer's hand
+        hand.get_number_of_aces()
+
+        # Update the sum of all the cards in the hand
+        hand.update_hand_sum()
+        
+class Rules():
+    
+    """We can use this class to change rules in our Blackjack game.
+    """
+    
+    def __init__(self):
+        # Changes the minumum bet the player can bet.
+        self.minbet = 10
+
+        # Changes the starting $ amount in a player's wallet.
+        self.starting_amount = 100
+
+        # This is the ratio of increased payout you receive
+        # if you have Blackjack at the beginning of the round.
+        self.blackjack_payout = 1.5
+        
+class Hand():
+    
+    """The player and the dealer each have an instance of the Hand class
+       in their respective objects
+    """
+
+    # Initialize with an empty hand and a hand sum of 0
+    def __init__(self):
+        self.hand_list = []
+        self.hand_sum = 0
+
+    # Calculates the number of Aces in the hand
+    def get_number_of_aces(self):
+        aces = 0
+        # For each card in the hand
+        for card in self.hand_list:
+            # If it's an Ace
+            if card.value == "A":
+                # Increment aces
+                aces += 1
+        self.number_of_aces = aces
+        return self.number_of_aces
+    
+    # Updates the hand's sum using the assigned 
+    # integers of the cards in the hand
+    def update_hand_sum(self):
+        li = []
+
+        # For  each card in the hand
+        # Add it to li and get the sum of li
+        for card in self.hand_list:
+            li.append(card.assigned_int)
+        hand_sum = sum(li)
+
+        # If there's more than 1 Ace and the hand's sum
+        # is less than 11, add 10 to the hand's sum
+        if self.number_of_aces > 0 and hand_sum < 12:
+            hand_sum += 10
+
+        # Updates self.hand_sum with calculated integer 
+        # and returns the integer
+        self.hand_sum = hand_sum
+        return self.hand_sum
+    
+    # Resets the hand's list and hand's sum
+    # Called at the beginning of a round
+    def reset_hand(self):
+        self.hand_list = []
+        self.hand_sum = 0
+
+    # Checks to see if the hand's sum is equal to 21 (Blackjack)
+    # and returns True if it is
+    def is_blackjack(self):
+        return self.hand_sum == 21
+    
+    # Checks to see if the hand's sum is greater than 21 (Bust)
+    # and returns True if it is
+    def is_bust(self):
+        return self.hand_sum > 21
+    
+    # Returns a formatted, printable string of 
+    # the whole hand by formatting each card in the hand
+    def get_printed_hand(self):
+        printed_hand = ""
+        for card in self.hand_list:
+            printed_hand += f"|{card.value} {card.symbol}| "
+        return printed_hand
+        
+class Dealer():
+    # Initialize Dealer class with an instance of a Hand object
+    def __init__(self):
+        self.hand = Hand()
+        
+class Player():
+    def __init__(self, rules):
+        self.rules = rules
+        self.wallet = self.rules.starting_amount
+        self.hand = Hand()
+
 class Blackjack():
-
-    # Initializes our class with Rules, Deck, Player, and Dealer objects,
-    # play_again value of True and prints the starting game dialogue
+    
+    """This is the main class for all functions of the game
+    """
+    
     def __init__(self):
         self.rules = Rules()
         self.deck = Deck()
@@ -236,6 +423,8 @@ class Blackjack():
         else:
             self.clear_terminal()
         
-# Creates an instance of 'Blackjack' and calls its 'play' method
-# (Starts the game)
-Blackjack().play()
+def main():
+    Blackjack().play()
+    
+if __name__ == "__main__":
+    main()
