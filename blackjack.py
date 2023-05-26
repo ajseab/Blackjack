@@ -215,7 +215,6 @@ class Blackjack():
         if i == "Windows":
             os.system("cls")
 
-    
     # Method that prints the starting game dialogue
     def print_game_start(self):
         # Clear macOS terminal
