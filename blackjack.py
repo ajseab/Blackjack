@@ -1,19 +1,12 @@
+#!/usr/bin/env python3
+
 """A Blackjack terminal game built for MacOS.
-
-Usage: python3 blackjack.py
-
-Copyright (c) 2023, Avery Seabolt
-All rights reserved.
-
-This source code is licensed under the BSD-style license found in the
-LICENSE file in the root directory of this source tree. 
 """
 
 import os
 import getpass
 import platform
 from random import shuffle
-
 
 class Card():
     
@@ -22,7 +15,7 @@ class Card():
     """
 
     # A dictionary that contains our symbols
-    symbols_dict = {"Spades": "♠", "Hearts": "♥", "Clubs": "♣", "Diamonds": "♦"}
+    symbols = {"Spades": "♠", "Hearts": "♥", "Clubs": "♣", "Diamonds": "♦"}
 
     # Defining our Card constructor method
     def __init__(self, value, suit):
@@ -48,15 +41,16 @@ class Card():
 
     # Assigns a symbol to each instance of Card by referencing the symbols dictionary
     def assign_symbol(self):
-        self.symbol = self.symbols_dict[self.suit]
+        self.symbol = self.symbols[self.suit]
 
     # Returns a string formatting the card for printing
     def get_printed_card(self):
         return f"|{self.value} {self.symbol}|"
         
-# Class for creating a shuffled deck of playing cards
-# Made up of instances of class Cards
 class Deck():
+
+    """Class for creating a shuffled deck of playing cards of Card objects
+    """
 
     # Initializing Deck with an empty list that will be filled with cards when new_deck is called
     def __init__(self):
