@@ -38,7 +38,7 @@ Feel free to adjust these values to suit your preferences.
 
 ## License
 
-This project is licensed under the BSD License. You can find the license details in the [LICENSE](LICENSE) file.
+This project is licensed under the BSD-4-Clause License. You can find the license details in the [LICENSE](LICENSE) file.
 
 ## Acknowledgments
 
